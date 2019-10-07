@@ -25,6 +25,28 @@ public class pardisLab3Main {
       }
     }
   }
+  static void populateTimeStamp(LazySkipListTimeStamp<Integer> lsl) {
+	    Random rng = new Random();
+	    Thread[] t = new Thread[Runtime.getRuntime().availableProcessors()];
+	    
+	    for (int i = 0; i < t.length; i++) {
+	      t[i] = new Thread() {
+	        public void run() {
+	          for (int i = 0; i < 1000000 / t.length; i++) {
+	            lsl.add(rng.nextInt());
+	          }
+	        }
+	      };
+	      t[i].start();
+	    }
+	    for (int i = 0; i < t.length; i++) {
+	      try {
+	        t[i].join();
+	      } catch (InterruptedException e) {
+	        e.printStackTrace();
+	      }
+	    }
+	  }
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
@@ -37,6 +59,17 @@ public class pardisLab3Main {
 		LazyTester.test(list1, 1000000, 1f, 0.2f, 0.6f);
 		
 		System.out.println("List modified");
+		
+		
+		LazySkipListTimeStamp<Integer> list2 = new LazySkipListTimeStamp<Integer>();
+		
+		populateTimeStamp(list2);
+		
+		LazyTester.testTimeStamp(list2,100,0.5f,0.5f,0f);
+		
+		System.out.println(LazyTester.allStamps);
+		
+		
 		
 		
 		
