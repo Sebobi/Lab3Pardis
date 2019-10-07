@@ -144,7 +144,8 @@ public final class LazySkipList<T> {
 				 && succs[lFound].fullyLinked 
 				 && !succs[lFound].marked); 
 		 }
-				
+	 
+		
 }	
 	
 	 
