@@ -147,6 +147,21 @@ public final class LazySkipListTimeStamp<T> {
 				 && !succs[lFound].marked),System.nanoTime()); 
 		 }
 	 
+	 
+	 public int size() {
+		 boolean done = false;
+		 int size = 0;
+		 Node<T> node = head;
+		 while(!done) {
+			 node = node.next[0];
+			 if(node.key != tail.key) {
+				 size++;
+			 } else {
+				 done = true;
+			 }
+		 }
+		 return size;
+	 }
 		
 }	
 	

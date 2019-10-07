@@ -55,18 +55,19 @@ public class pardisLab3Main {
 		populate(list1);
 		System.out.println("Listed populated in: " + (System.currentTimeMillis() - time) + " ms");
 		
-		
+		System.out.println(list1.size());
 		LazyTester.test(list1, 1000000, 1f, 0.2f, 0.6f);
 		
+		
 		System.out.println("List modified");
+		System.out.println(list1.size());
+		
+		
 		
 		
 		LazySkipListTimeStamp<Integer> list2 = new LazySkipListTimeStamp<Integer>();
-		
 		populateTimeStamp(list2);
-		
 		LazyTester.testTimeStamp(list2,100,0.5f,0.5f,0f);
-		
 		System.out.println(LazyTester.allStamps);
 		
 		
