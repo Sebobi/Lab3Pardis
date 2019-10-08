@@ -25,14 +25,14 @@ public class pardisLab3Main {
       }
     }
   }
-  /*static void populatePrio(PrioritySkipList<Integer> psl) {
+  static void populatePrio(PrioritySkipList<Integer> psl) {
     Random rng = new Random();
     Thread[] t = new Thread[Runtime.getRuntime().availableProcessors()];
     for (int i = 0; i < t.length; i++) {
       t[i] = new Thread() {
         public void run() {
           for (int i = 0; i < 1000000 / t.length; i++) {
-            psl.add(new NodePrio<Integer> rng.nextInt());
+            psl.add(new NodePrio<Integer>(rng.nextInt(), rng.nextInt()));
           }
         }
       };
@@ -45,7 +45,7 @@ public class pardisLab3Main {
         e.printStackTrace();
       }
     }
-  }*/
+  }
   static void populateTimeStamp(LazySkipListTimeStamp<Integer> lsl) {
 	    Random rng = new Random();
 	    Thread[] t = new Thread[Runtime.getRuntime().availableProcessors()];
@@ -94,11 +94,7 @@ public class pardisLab3Main {
 		
 		PrioritySkipList<Integer> list3 = new PrioritySkipList<Integer>();
 		time = System.currentTimeMillis();
-		//populatePrio(list3);
-    list3.add(new NodePrio<Integer>(4, 2));
-    list3.add(new NodePrio<Integer>(2, 1));
-    list3.add(new NodePrio<Integer>(4, 5));
-    list3.add(new NodePrio<Integer>(3, 5));
+		populatePrio(list3);
 		System.out.println("List populated in: " + (System.currentTimeMillis() - time) + " ms");
 		
 		System.out.println(list3.size());
