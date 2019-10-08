@@ -3,6 +3,10 @@ package pardisLab3;
 import java.util.Random;
 
 public final class LazySkipListTimeStamp<T> {
+
+	
+	
+	
 	 public static final int MAX_LEVEL = 25;
 	 final Node<T> head = new Node<T>(Integer.MIN_VALUE); 
 	 final Node<T> tail = new Node<T>(Integer.MAX_VALUE);
@@ -58,7 +62,10 @@ public final class LazySkipListTimeStamp<T> {
 				Node<T> nodeFound = succs[lFound]; 
 				if (!nodeFound.marked) { 
 					while (!nodeFound.fullyLinked) {} 
-					return new ReturnAndStamp(false,System.nanoTime()); 
+					synchronized(this) {
+						return new ReturnAndStamp(false,System.nanoTime()); 	
+					}
+					
 					} 
 				continue; 
 				} 
@@ -80,7 +87,11 @@ public final class LazySkipListTimeStamp<T> {
 				for (int level = 0; level <= topLevel; level++) 
 					preds[level].next[level] = newNode; 
 				newNode.fullyLinked = true; // successful add linearization point 
-				return new ReturnAndStamp(true,System.nanoTime()); 
+				
+				synchronized(this) {
+					return new ReturnAndStamp(true,System.nanoTime()); 	
+				}
+				
 				} finally { 
 					for (int level = 0; level <= highestLocked; level++) 
 						preds[level].unlock(); 
@@ -106,8 +117,10 @@ public final class LazySkipListTimeStamp<T> {
 					 victim.lock.lock(); 
 					 if (victim.marked) { 
 						 victim.lock.unlock(); 
-						 return new ReturnAndStamp(false,System.nanoTime()); 
-						 } 
+						 synchronized(this) {
+							 return new ReturnAndStamp(false,System.nanoTime());  
+						 }
+					} 
 					 victim.marked = true; 
 					 isMarked = true; 
 					 } 
@@ -125,13 +138,19 @@ public final class LazySkipListTimeStamp<T> {
 						 preds[level].next[level] = victim.next[level]; 
 						 } 
 					 victim.lock.unlock(); 
-					 return new ReturnAndStamp(true,System.nanoTime()); 
+					 synchronized(this) {
+
+						 return new ReturnAndStamp(true,System.nanoTime());  
+					 }
 					 } finally { 
 						 for (int i = 0; i <= highestLocked; i++) { 
 							 preds[i].unlock(); 
 							 } 
 						 } 
-				 } else return new ReturnAndStamp(false,System.nanoTime()); 
+				 } else 
+					 synchronized(this){
+						 return new ReturnAndStamp(false,System.nanoTime()); 
+					 }
 			 } 
 		 } 
 	 
@@ -141,10 +160,11 @@ public final class LazySkipListTimeStamp<T> {
 		 Node<T>[] succs = (Node<T>[]) new Node[MAX_LEVEL + 1]; 
 		 int lFound = find(x, preds, succs); 
 		 
-		 
+		 synchronized(this) {
 		 return new ReturnAndStamp((lFound != -1 
 				 && succs[lFound].fullyLinked 
 				 && !succs[lFound].marked),System.nanoTime()); 
+		 }
 		 }
 	 
 	 
@@ -161,6 +181,29 @@ public final class LazySkipListTimeStamp<T> {
 			 }
 		 }
 		 return size;
+	 }
+	 
+	 public boolean compareTo(LazySkipListTimeStamp<T> other) {
+		 boolean done = false;
+		 Node<T> node1 = head;
+		 Node<T> node2 = other.head;
+		 
+		 while(!done) {
+			 node1 = node1.next[0];
+			 node2 = node2.next[0];
+			 
+			 if(node1.key != node2.key)
+				 return false;
+			 
+			 if(node1.next[0] == null && node2.next[0] == null)
+				 done = true;
+				 
+		 }
+		
+		 return true;
+		 
+		 
+		 
 	 }
 		
 }	

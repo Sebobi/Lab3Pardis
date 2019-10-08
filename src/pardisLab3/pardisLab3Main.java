@@ -1,5 +1,8 @@
 package pardisLab3;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Random;
 
 public class pardisLab3Main {
@@ -46,7 +49,9 @@ public class pardisLab3Main {
       }
     }
   }
-  static void populateTimeStamp(LazySkipListTimeStamp<Integer> lsl) {
+  
+  
+  static void populateTimeStamp(LazySkipListTimeStamp<Integer> lsl,LazySkipListTimeStamp<Integer> listSeq) {
 	    Random rng = new Random();
 	    Thread[] t = new Thread[Runtime.getRuntime().availableProcessors()];
 	    
@@ -54,7 +59,9 @@ public class pardisLab3Main {
 	      t[i] = new Thread() {
 	        public void run() {
 	          for (int i = 0; i < 1000000 / t.length; i++) {
-	            lsl.add(rng.nextInt());
+	        	int value = rng.nextInt();
+	            lsl.add(value);
+	            listSeq.add(value);
 	          }
 	        }
 	      };
@@ -73,13 +80,12 @@ public class pardisLab3Main {
 		// TODO Auto-generated method stub
 		LazySkipList<Integer> list1 = new LazySkipList<Integer>();
 		long time = System.currentTimeMillis();
-		/*populate(list1);
+		populate(list1);
 		System.out.println("List populated in: " + (System.currentTimeMillis() - time) + " ms");
 		
 		System.out.println(list1.size());
 		LazyTester.test(list1, 1000000, 1f, 0.2f, 0.6f);
-		
-		
+
 		System.out.println("List modified");
 		System.out.println(list1.size());
 		
@@ -87,10 +93,25 @@ public class pardisLab3Main {
 		
 		
 		LazySkipListTimeStamp<Integer> list2 = new LazySkipListTimeStamp<Integer>();
-		populateTimeStamp(list2);
-		LazyTester.testTimeStamp(list2,100,0.5f,0.5f,0f);
-		System.out.println(LazyTester.allStamps);
-		*/
+		LazySkipListTimeStamp<Integer> list2seq = new LazySkipListTimeStamp<Integer>();
+		populateTimeStamp(list2,list2seq);
+		
+		
+		
+		ArrayList<LogElement> operations = LazyTester.testTimeStamp(list2,1000,0.5f,0.5f,0f);
+		Collections.sort(operations);
+		
+		
+	
+		LazyTester.performSeq(operations, list2seq);
+	
+		System.out.println(list2.compareTo(list2seq));
+		System.out.println(list2.size());
+		System.out.println(list2seq.size());
+		
+		
+		//System.out.println(LazyTester.allStamps);
+		
 		
 		PrioritySkipList<Integer> list3 = new PrioritySkipList<Integer>();
 		time = System.currentTimeMillis();
