@@ -11,6 +11,8 @@ public final class NodePrio<T>{
 	final AtomicMarkableReference<NodePrio<T>>[] next = new AtomicMarkableReference[PrioritySkipList.MAX_LEVEL+1]; 
 	public int topLevel;
 	public volatile boolean fullyLinked = false;
+	public long timeStamp;
+	
 	// sentinel node constructor 
 	public NodePrio(int myPriority) {		 
 		this.item = null; 

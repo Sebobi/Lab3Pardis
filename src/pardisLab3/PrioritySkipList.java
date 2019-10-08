@@ -89,30 +89,29 @@ public final class PrioritySkipList<T> {
 				if (!preds[level].next[level].compareAndSet(succs[level], node, false, false))
 					continue;
 			node.fullyLinked = true; // successful add linearization point 
+			node.timeStamp = System.nanoTime();
 			return true;
 		} 
 		
 	} 
 	boolean remove(NodePrio<T> x) { 
-		 NodePrio<T> victim = null; boolean isMarked = false; int topLevel = -1; 
+		 NodePrio<T> victim = null; int topLevel = -1; 
 		 NodePrio<T>[] preds = (NodePrio<T>[]) new NodePrio[MAX_LEVEL + 1]; 
 		 NodePrio<T>[] succs = (NodePrio<T>[]) new NodePrio[MAX_LEVEL + 1]; 
 		 while (true){ 
 			 int lFound = find(x, preds, succs); 
 			 if (lFound != -1) victim = succs[lFound]; 
-			 if (isMarked | 
+			 if ( 
 					 (lFound != -1 && 
 					 (victim.fullyLinked 
 							 && victim.topLevel == lFound 
-							 && !victim.marked.get()))) { 
-				 if (!isMarked) { 
+							 && victim.marked.get()))) { 
+				  
 					 topLevel = victim.topLevel; 
-					 if (victim.marked.get()) { 
+					 if (!victim.marked.get()) { 
 						 return false; 
 						 } 
-					 victim.marked.compareAndSet(false, true);
-					 isMarked = true; 
-					 } 
+					 
 				 
 				 NodePrio<T> pred, succ; boolean valid = true; 
 				 for (int level = 0; valid && (level <= topLevel); level++) { 
@@ -126,16 +125,17 @@ public final class PrioritySkipList<T> {
 				 return true; 
 
 
-				 } else return false; 
+				 } else 
+					 return false; 
 			 } 
 		 } 
 	
 	
-		public NodePrio<T> findAndMarkMin() { 
+		public NodePrio<T> findAndMarkMin(long timeStamp) { 
 			NodePrio<T> curr = null, succ = null; 
 			curr = head.next[0].getReference(); 
 			while (curr != tail) { 
-				if (!curr.marked.get()) { 
+				if (!curr.marked.get() && curr.timeStamp < timeStamp) { 
 					if (curr.marked.compareAndSet(false, true)) { 
 						return curr; 
 						} else { 

@@ -124,5 +124,10 @@ public class pardisLab3Main {
 		System.out.println("List modified");
 		System.out.println(list3.size());
 		
+		
+		SkipQueue<Integer> skippy = new SkipQueue<>();
+		
+		
+		
 	}
 }
