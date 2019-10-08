@@ -10,7 +10,11 @@ public final class PrioritySkipList<T> {
 	 final NodePrio<T> head = new NodePrio<T>(Integer.MIN_VALUE); 
 	 final NodePrio<T> tail = new NodePrio<T>(Integer.MAX_VALUE);
 	
-	
+	public PrioritySkipList() {
+		for (int i = 0; i < head.next.length; i++) { 
+			head.next[i].set(tail, false); 
+		} 
+  }
  
 	private int randomLevel() {
 		Random random = new Random();
@@ -107,6 +111,21 @@ public final class PrioritySkipList<T> {
 					} 
 				} 
 			return null; // no unmarked nodes 
-			}
-	}
+    }
+
+    public int size() {
+      boolean done = false;
+      int size = 0;
+      NodePrio<T> node = head;
+      while(!done) {
+        node = node.next[0].getReference();
+        if(node.score != tail.score) {
+          size++;
+        } else {
+          done = true;
+        }
+      }
+      return size;
+    }
+}
 

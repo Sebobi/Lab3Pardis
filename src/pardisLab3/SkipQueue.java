@@ -9,7 +9,7 @@ public class SkipQueue<T> {
     NodePrio<T> node = (NodePrio<T>)new NodePrio(item, score);
     return skiplist.add(node);
   }
-  public T removeMin() {
+  /*public T removeMin() {
     NodePrio<T> node = skiplist.findAndMarkMin();
     if (node != null) {
       skiplist.remove(node);
@@ -17,6 +17,6 @@ public class SkipQueue<T> {
     } else{
       return null;
     }
-  }
+  }*/
 }
 
