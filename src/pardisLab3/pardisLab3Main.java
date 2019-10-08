@@ -1,7 +1,6 @@
 package pardisLab3;
 
 import java.util.Random;
-import static pardisLab3.PrioritySkiplist.Node;
 
 public class pardisLab3Main {
 
