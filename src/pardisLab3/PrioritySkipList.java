@@ -93,9 +93,42 @@ public final class PrioritySkipList<T> {
 		} 
 		
 	} 
-	/*boolean remove(NodePrio<T> node) {
-		
-	} */
+	boolean remove(NodePrio<T> x) { 
+		 NodePrio<T> victim = null; boolean isMarked = false; int topLevel = -1; 
+		 NodePrio<T>[] preds = (NodePrio<T>[]) new NodePrio[MAX_LEVEL + 1]; 
+		 NodePrio<T>[] succs = (NodePrio<T>[]) new NodePrio[MAX_LEVEL + 1]; 
+		 while (true){ 
+			 int lFound = find(x, preds, succs); 
+			 if (lFound != -1) victim = succs[lFound]; 
+			 if (isMarked | 
+					 (lFound != -1 && 
+					 (victim.fullyLinked 
+							 && victim.topLevel == lFound 
+							 && !victim.marked.get()))) { 
+				 if (!isMarked) { 
+					 topLevel = victim.topLevel; 
+					 if (victim.marked.get()) { 
+						 return false; 
+						 } 
+					 victim.marked.compareAndSet(false, true);
+					 isMarked = true; 
+					 } 
+				 
+				 NodePrio<T> pred, succ; boolean valid = true; 
+				 for (int level = 0; valid && (level <= topLevel); level++) { 
+					 pred = preds[level];  
+					 valid = !pred.marked.get() && pred.next[level].getReference()==victim; 
+					 } 
+				 if (!valid) continue; 
+				 for (int level = topLevel; level >= 0; level--) { 
+					 preds[level].next[level].compareAndSet(victim, victim.next[level].getReference(), false, false); 
+					 } 
+				 return true; 
+
+
+				 } else return false; 
+			 } 
+		 } 
 	
 	
 		public NodePrio<T> findAndMarkMin() { 
