@@ -3,6 +3,7 @@ package pardisLab3;
 public class ReturnAndStamp {
 	
 	public boolean returnVal;
+  public Object returnObj;
 	public long time;
 	
 
@@ -11,4 +12,8 @@ public class ReturnAndStamp {
 		this.time = time;
 	}
 
+	public ReturnAndStamp(Object returnObj, long time) {
+		this.returnObj = returnObj;
+		this.time = time;
+	}
 }

@@ -4,9 +4,6 @@ import java.util.Random;
 
 public final class LazySkipListTimeStamp<T> {
 
-	
-	
-	
 	 public static final int MAX_LEVEL = 25;
 	 final Node<T> head = new Node<T>(Integer.MIN_VALUE); 
 	 final Node<T> tail = new Node<T>(Integer.MAX_VALUE);
@@ -202,14 +199,8 @@ public final class LazySkipListTimeStamp<T> {
 		
 		 return true;
 		 
-		 
-		 
 	 }
 		
 }	
 	
-	 
-	 
-
-	 
 

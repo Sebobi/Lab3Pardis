@@ -126,8 +126,16 @@ public class pardisLab3Main {
 		
 		
 		SkipQueue<Integer> skippy = new SkipQueue<>();
+    skippy.add(23, 50);
+    skippy.add(3, 51);
+    skippy.add(2, 0);
+    skippy.add(28, -5);
 		
+    for (int i = 0; i < 4; i++) {
+      System.out.println(skippy.removeMin()); // 28 2 23 3
+    }
 		
+		SkipQueueTimeStamp<Integer> skippy2 = new SkipQueueTimeStamp<>();
 		
 	}
 }
