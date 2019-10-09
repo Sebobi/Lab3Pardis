@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Random;
+import java.util.concurrent.PriorityBlockingQueue;
 
 public class pardisLab3Main {
 
@@ -28,27 +29,7 @@ public class pardisLab3Main {
       }
     }
   }
-  static void populatePrio(PrioritySkipList<Integer> psl) {
-    Random rng = new Random();
-    Thread[] t = new Thread[Runtime.getRuntime().availableProcessors()];
-    for (int i = 0; i < t.length; i++) {
-      t[i] = new Thread() {
-        public void run() {
-          for (int i = 0; i < 1000000 / t.length; i++) {
-            psl.add(new NodePrio<Integer>(rng.nextInt(), rng.nextInt()));
-          }
-        }
-      };
-      t[i].start();
-    }
-    for (int i = 0; i < t.length; i++) {
-      try {
-        t[i].join();
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
-    }
-  }
+
   
   
   static void populateTimeStamp(LazySkipListTimeStamp<Integer> lsl,LazySkipListTimeStamp<Integer> listSeq) {
@@ -89,6 +70,34 @@ public class pardisLab3Main {
 	        	int prio = rng.nextInt();
 	            lsl.add(value, prio);
 	            listSeq.add(value,prio);
+	          }
+	        }
+	      };
+	      t[i].start();
+	    }
+	    for (int i = 0; i < t.length; i++) {
+	      try {
+	        t[i].join();
+	      } catch (InterruptedException e) {
+	        e.printStackTrace();
+	      }
+	    }
+	  }
+  
+  static void populateQueuesJava(SkipQueue<Integer> lsl,PriorityBlockingQueue<Integer> listJava) {
+	    Random rng = new Random();
+	    Thread[] t = new Thread[Runtime.getRuntime().availableProcessors()];
+	    
+	    for (int i = 0; i < t.length; i++) {
+	      t[i] = new Thread() {
+	        public void run() {
+	          for (int i = 0; i < 100000 / t.length; i++) {
+	        	int value = rng.nextInt();
+	        	int prio = rng.nextInt();
+	            while(!lsl.add(value, prio)) {
+	            	prio = rng.nextInt();
+	            }
+	            listJava.add(value);
 	          }
 	        }
 	      };
@@ -171,18 +180,48 @@ public class pardisLab3Main {
 		System.out.println(skippy2.size());
 		System.out.println(skippySeq.size());
 		
-		ArrayList<LogElement> operations2 = LazyTester.testPriorityTimeStamp(skippy2,100,1f,0f,0f);
+		ArrayList<LogElement> operations2 = LazyTester.testPriorityTimeStamp(skippy2,10000,0.5f,0.3f,0.2f);
 		Collections.sort(operations2);
 		
 		System.out.println(skippy2.size());
 		
-		
+	
 		
 		LazyTester.performPrioritySeq(operations2, skippySeq);
 		
 		System.out.println(skippySeq.size());
 		
+		
+		System.out.println(skippySeq.removeMin().returnObj);
+		System.out.println(skippySeq.removeMin().returnObj);
+		System.out.println(skippySeq.size());
 		System.out.println("Done!:)");
+		
+		
+		//Final test
+		
+		System.out.println("-----------");
+		
+		SkipQueue<Integer> ourQueue = new SkipQueue();
+		PriorityBlockingQueue<Integer> theirQueue = new PriorityBlockingQueue();
+		
+		
+		populateQueuesJava(ourQueue,theirQueue);
+		
+		
+		System.out.println(ourQueue.size());
+		System.out.println(theirQueue.size());
+		
+		int totalOps = 10000;
+		float addOps = 0.5f;
+		float removeOps = 0.5f;
+		float containOps = 0f;
+		int threads = 2;
+		System.out.println(CompareQueues.testOurs(ourQueue,threads,totalOps,addOps,removeOps,containOps));
+		
+		
+		System.out.println(CompareQueues.testJava(theirQueue,threads,totalOps,addOps,removeOps,containOps));
+		
 		
 		
 		

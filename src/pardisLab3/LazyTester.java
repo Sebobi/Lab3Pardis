@@ -239,13 +239,13 @@ public class LazyTester {
 			if(op == 1 && removeOps > 0) {
 				removeOps--;
 				returnS = queue.removeMin();
-				NodePrio<Integer> returnObj = (NodePrio)returnS.returnObj;
+				Node<Integer> returnObj = (Node)returnS.returnObj;
 				if(returnObj == null) {
 					log.add(new LogElement(0,0,op,returnS.time,false));
 				}
 					
 				else {
-					log.add(new LogElement(returnObj.item,returnObj.score,op,returnS.time,true));
+					log.add(new LogElement(returnObj.item,returnObj.key,op,returnS.time,true));
 					
 				}
 					

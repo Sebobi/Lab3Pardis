@@ -6,12 +6,12 @@ public class SkipQueue<T> {
     skiplist = new PrioritySkipList<T>();
   }
   public boolean add(T item, int score) {
-    NodePrio<T> node = (NodePrio<T>)new NodePrio(item, score);
+    Node<T> node = (Node<T>)new Node(item, PrioritySkipListTimeStamp.randomLevel(),score);
     return skiplist.add(node);
   }
   public T removeMin() {
 	long timeStamp = System.nanoTime();
-    NodePrio<T> node = skiplist.findAndMarkMin(timeStamp);
+    Node<T> node = skiplist.findAndMarkMin(timeStamp);
     if (node != null) {
       skiplist.remove(node);
       return node.item;
@@ -19,5 +19,21 @@ public class SkipQueue<T> {
       return null;
     }
   }
+ 
+
+	  
+	  public boolean contains(T item,int score) {
+
+		  Node<T> node = (Node<T>)new Node(item, PrioritySkipListTimeStamp.randomLevel(), score);
+		  return skiplist.contains(node);
+		  
+		  
+		  
+	  }
+	  
+
+	  public int size() {
+		  return skiplist.size();
+	  }
 }
 

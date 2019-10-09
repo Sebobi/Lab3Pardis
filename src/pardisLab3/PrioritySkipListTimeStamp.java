@@ -103,6 +103,7 @@ public final class PrioritySkipListTimeStamp<T> {
     Node<T>[] preds = (Node<T>[]) new Node[MAX_LEVEL + 1]; 
     Node<T>[] succs = (Node<T>[]) new Node[MAX_LEVEL + 1]; 
     while (true){ 
+    	
       int lFound = find(x, preds, succs); 
       if (lFound != -1) victim = succs[lFound]; 
       if ( 
@@ -116,6 +117,8 @@ public final class PrioritySkipListTimeStamp<T> {
           return false;
         }
 
+        
+        victim.lock(); 
         int highestLocked = -1;
         try { 
 			 Node<T> pred, succ; boolean valid = true; 
@@ -125,15 +128,15 @@ public final class PrioritySkipListTimeStamp<T> {
 				 highestLocked = level; 
 				 valid = !pred.marked && pred.next[level]==victim; 
 				 } 
-			 if (!valid) continue; 
+			 if (!valid) {
+				 victim.lock.unlock(); 
+				 continue; 
+			 }
 			 for (int level = topLevel; level >= 0; level--) { 
 				 preds[level].next[level] = victim.next[level]; 
 			 } 
 			 victim.lock.unlock(); 
-			 synchronized(this) {
-	
-				 return true;
-			 }
+			 return true;
 			 } finally { 
 				 for (int i = 0; i <= highestLocked; i++) { 
 					 preds[i].unlock(); 
@@ -146,7 +149,7 @@ public final class PrioritySkipListTimeStamp<T> {
 
 
   public ReturnAndStamp findAndMarkMin(long timeStamp) { 
-    Node<T> curr = null, succ = null; 
+    Node<T> curr = null;
     curr = head.next[0]; 
     while (curr != tail) {
       curr.lock();
@@ -181,7 +184,8 @@ public final class PrioritySkipListTimeStamp<T> {
     while(!done) {
       node = node.next[0];
       if(node.key != tail.key) {
-        size++;
+    	if(!node.marked)
+    		size++;
       } else {
         done = true;
       }
