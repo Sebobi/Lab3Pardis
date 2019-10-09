@@ -59,13 +59,12 @@ public class LazyTester {
 	}
 	
 	public static StringBuilder allStamps = new StringBuilder("");
-	private static ArrayList<LogElement> bigLog = new ArrayList<LogElement>();
 	
 	
 	
 	
 	public static ArrayList<LogElement> testTimeStamp(LazySkipListTimeStamp<Integer> list,int totOps,float percentAdd, float percentRemove, float percentContains) {
-		
+		ArrayList<LogElement> bigLog = new ArrayList<LogElement>();
 
 		ArrayList<LogElement>[] logArray = new ArrayList[Runtime.getRuntime().availableProcessors()];
 		
@@ -177,6 +176,111 @@ public class LazyTester {
 		}
 		
 	}
+	
+
+	public static ArrayList<LogElement> testPriorityTimeStamp(SkipQueueTimeStamp<Integer> list,int totOps,float percentAdd, float percentRemove, float percentContains) {
+		ArrayList<LogElement> bigLog = new ArrayList<LogElement>();
+
+		ArrayList<LogElement>[] logArray = new ArrayList[Runtime.getRuntime().availableProcessors()];
+		
+		
+		
+		Thread[] threads = new Thread[Runtime.getRuntime().availableProcessors()];
+		
+		int addOps = (int)(totOps*percentAdd/threads.length);
+		int removeOps = (int)(totOps*percentRemove/threads.length);
+		int containOps = (int)(totOps*percentContains/threads.length);
+		
+		for(int i =0;i<threads.length;i++) {
+
+			logArray[i] = new ArrayList<LogElement>();
+			ArrayList<LogElement> log = logArray[i];
+			threads[i] = new Thread() {
+				public void run() {
+					
+					testThreadSkipQueueStamp(list,addOps,removeOps,containOps,log);
+				}
+			};
+			threads[i].start();
+		}
+		
+	    for (int i = 0; i < threads.length; i++) {
+	        try {
+	          threads[i].join();
+	          bigLog.addAll(logArray[i]);
+	        } catch (InterruptedException e) {
+	          e.printStackTrace();
+	        }
+	      }
+
+	    
+	    return bigLog;
+	}
+	
+	public static void testThreadSkipQueueStamp(SkipQueueTimeStamp<Integer> queue, int addOps, int removeOps, int containOps,ArrayList<LogElement> log) {
+		Random random = new Random();
+		int totOps = addOps+removeOps+containOps;
+		
+		
+		ReturnAndStamp returnS = new ReturnAndStamp(false,0);
+		
+		while(addOps + removeOps + containOps > 0) {
+			int op = random.nextInt(3);
+			int value = random.nextInt();
+			int priority = random.nextInt(totOps);
+			
+			if(op == 0 && addOps > 0) {
+				addOps--;
+				
+				 returnS = queue.add(value,priority);
+				 log.add(new LogElement(value,priority,op,returnS.time,returnS.returnVal));
+			
+			}
+			if(op == 1 && removeOps > 0) {
+				removeOps--;
+				returnS = queue.removeMin();
+				NodePrio<Integer> returnObj = (NodePrio)returnS.returnObj;
+				if(returnObj == null) {
+					log.add(new LogElement(0,0,op,returnS.time,false));
+				}
+					
+				else {
+					log.add(new LogElement(returnObj.item,returnObj.score,op,returnS.time,true));
+					
+				}
+					
+			}
+			if(op == 2 && containOps > 0) {
+				containOps--;
+				returnS = queue.contains(value,priority);
+				 log.add(new LogElement(value,priority,op,returnS.time,returnS.returnVal));
+			}
+		}
+	}
+	
+	
+	public static void performPrioritySeq(ArrayList<LogElement> log, SkipQueueTimeStamp<Integer> list) {
+		
+		for(LogElement elem : log) {
+			switch(elem.operation) {
+			case LogElement.ADD:
+				list.add(elem.value,elem.priority);
+				break;
+			case LogElement.REMOVE:
+				list.removeMin();
+				break;
+			case LogElement.CONTAINS:
+				list.contains(elem.value, elem.priority);
+				break;
+			default:
+				System.err.print("\n\n\n:(\n\n\n");
+				break;
+			
+			}	
+		}
+		
+	}
+	
 	
 	
 	

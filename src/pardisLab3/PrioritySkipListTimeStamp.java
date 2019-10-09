@@ -143,8 +143,20 @@ public final class PrioritySkipListTimeStamp<T> {
         } 
       } 
     } 
-    return null; // no unmarked nodes 
+    return new ReturnAndStamp(null,System.nanoTime()); // no unmarked nodes 
   }
+  
+  public ReturnAndStamp contains(NodePrio<T> x) { 
+	 NodePrio<T>[] preds = (NodePrio<T>[]) new NodePrio[MAX_LEVEL + 1]; 
+	 NodePrio<T>[] succs = (NodePrio<T>[]) new NodePrio[MAX_LEVEL + 1]; 
+	 
+	 int lFound = find(x, preds, succs); 
+	 return new ReturnAndStamp((lFound != -1 
+			 && succs[lFound].fullyLinked 
+			 && !succs[lFound].marked.get()),System.nanoTime()); 
+  }
+  
+  
 
   public int size() {
     boolean done = false;

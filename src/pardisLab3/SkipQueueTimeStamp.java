@@ -12,12 +12,26 @@ public class SkipQueueTimeStamp<T> {
   public ReturnAndStamp removeMin() {
     long timeStamp = System.nanoTime();
     ReturnAndStamp ras = skiplist.findAndMarkMin(timeStamp);
-    if (ras != null) {
+    if (ras.returnObj != null) {
       skiplist.remove((NodePrio<T>)ras.returnObj);
-      return ras;
-    } else{
-      return null;
-    }
+      
+    } 
+    return ras;
+    
   }
+  
+  public ReturnAndStamp contains(T item,int score) {
+
+	  NodePrio<T> node = (NodePrio<T>)new NodePrio(item, score);
+	  return skiplist.contains(node);
+	  
+	  
+	  
+  }
+  
+  public int size() {
+	  return skiplist.size();
+  }
+  
 }
 

@@ -6,11 +6,19 @@ public class LogElement implements Comparable<LogElement>{
 	public static final int CONTAINS = 2;
 	
 	public int value;
+	public int priority;
 	public int operation;
 	public long returnStamp;
 	public boolean result;
 	public LogElement(int value, int operation, long returnStamp, boolean result) {
 		this.value = value;
+		this.operation = operation;
+		this.returnStamp = returnStamp;
+		this.result = result;
+	}
+	public LogElement(int value,int priority, int operation, long returnStamp, boolean result) {
+		this.value = value;
+		this.priority = priority;
 		this.operation = operation;
 		this.returnStamp = returnStamp;
 		this.result = result;

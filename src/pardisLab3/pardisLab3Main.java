@@ -75,6 +75,34 @@ public class pardisLab3Main {
 	      }
 	    }
 	  }
+  
+
+  static void populatePriorityQueueTimeStamp(SkipQueueTimeStamp<Integer> lsl,SkipQueueTimeStamp<Integer> listSeq) {
+	    Random rng = new Random();
+	    Thread[] t = new Thread[Runtime.getRuntime().availableProcessors()];
+	    
+	    for (int i = 0; i < t.length; i++) {
+	      t[i] = new Thread() {
+	        public void run() {
+	          for (int i = 0; i < 100000 / t.length; i++) {
+	        	int value = rng.nextInt();
+	        	int prio = rng.nextInt();
+	            lsl.add(value, prio);
+	            listSeq.add(value,prio);
+	          }
+	        }
+	      };
+	      t[i].start();
+	    }
+	    for (int i = 0; i < t.length; i++) {
+	      try {
+	        t[i].join();
+	      } catch (InterruptedException e) {
+	        e.printStackTrace();
+	      }
+	    }
+	  }
+  
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
@@ -112,7 +140,7 @@ public class pardisLab3Main {
 		
 		//System.out.println(LazyTester.allStamps);
 		
-		
+		/*
 		PrioritySkipList<Integer> list3 = new PrioritySkipList<Integer>();
 		time = System.currentTimeMillis();
 		populatePrio(list3);
@@ -122,20 +150,43 @@ public class pardisLab3Main {
 		//LazyTester.testPrio(list3, 1000000, 1f, 0.2f, 0.6f);
 		
 		System.out.println("List modified");
-		System.out.println(list3.size());
+		System.out.println(list3.size());*/
 		
 		
 		SkipQueue<Integer> skippy = new SkipQueue<>();
-    skippy.add(23, 50);
-    skippy.add(3, 51);
-    skippy.add(2, 0);
-    skippy.add(28, -5);
+	    skippy.add(23, 50);
+	    skippy.add(3, 51);
+	    skippy.add(2, 0);
+	    skippy.add(28, -5);
 		
-    for (int i = 0; i < 4; i++) {
-      System.out.println(skippy.removeMin()); // 28 2 23 3
-    }
-		
+	    for (int i = 0; i < 4; i++) {
+	      System.out.println(skippy.removeMin()); // 28 2 23 3
+	    }
+			
 		SkipQueueTimeStamp<Integer> skippy2 = new SkipQueueTimeStamp<>();
+		SkipQueueTimeStamp<Integer> skippySeq = new SkipQueueTimeStamp<>();
+		
+		populatePriorityQueueTimeStamp(skippy2,skippySeq);
+		
+		System.out.println(skippy2.size());
+		System.out.println(skippySeq.size());
+		
+		ArrayList<LogElement> operations2 = LazyTester.testPriorityTimeStamp(skippy2,100,1f,0f,0f);
+		Collections.sort(operations2);
+		
+		System.out.println(skippy2.size());
+		
+		
+		
+		LazyTester.performPrioritySeq(operations2, skippySeq);
+		
+		System.out.println(skippySeq.size());
+		
+		System.out.println("Done!:)");
+		
+		
+		
+		
 		
 	}
 }
