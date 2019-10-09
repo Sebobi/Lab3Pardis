@@ -2,6 +2,7 @@ package pardisLab3;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicMarkableReference;
+import java.util.concurrent.locks.ReentrantLock;
 
 
 public final class NodePrio<T>{
@@ -10,6 +11,7 @@ public final class NodePrio<T>{
 	AtomicBoolean marked = new AtomicBoolean(false);
 	final AtomicMarkableReference<NodePrio<T>>[] next = new AtomicMarkableReference[PrioritySkipList.MAX_LEVEL+1]; 
 	public int topLevel;
+	public ReentrantLock lock = new ReentrantLock();
 	public volatile boolean fullyLinked = false;
 	public long timeStamp;
 	

@@ -83,11 +83,14 @@ public final class PrioritySkipList<T> {
 			} 	
 			if (!valid) continue; 
 			
-			for (int level = 0; level <= topLevel; level++) 
+			int level;
+			for (level = 0; level <= topLevel; level++) 
 				node.next[level].set(succs[level],false); 
-			for (int level = 0; level <= topLevel; level++) 
+			for (level = 0; level <= topLevel; level++) 
 				if (!preds[level].next[level].compareAndSet(succs[level], node, false, false))
-					continue;
+					break;
+			if (level <= topLevel)
+				continue;
 			node.fullyLinked = true; // successful add linearization point 
 			node.timeStamp = System.nanoTime();
 			return true;

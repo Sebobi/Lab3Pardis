@@ -10,7 +10,8 @@ public final class Node<T> {
 	 final Node<T>[] next; 
 	 volatile boolean marked = false; 
 	 volatile boolean fullyLinked = false; 
-	 public int topLevel; 
+	 public int topLevel;
+	 public long timeStamp;
 	 public Node(int key) { // sentinel node constructor 
 		 this.item = null; 
 		 this.key = key; 
@@ -22,7 +23,10 @@ public final class Node<T> {
 		 key = x.hashCode(); 
 		 next = new Node[height + 1]; 
 		 topLevel = height; 
-		 } 
+		 }
+	 public Node(T x, int height, int score) {
+		 item = x; key = score; topLevel = height; next = new Node[height + 1];
+	 }
 	 public void lock() { 
 		 lock.lock(); 
 		 } 

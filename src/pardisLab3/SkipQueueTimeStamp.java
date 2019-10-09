@@ -6,14 +6,14 @@ public class SkipQueueTimeStamp<T> {
     skiplist = new PrioritySkipListTimeStamp<T>();
   }
   public ReturnAndStamp add(T item, int score) {
-    NodePrio<T> node = (NodePrio<T>)new NodePrio(item, score);
+    Node<T> node = (Node<T>)new Node(item, PrioritySkipListTimeStamp.randomLevel(), score);
     return skiplist.add(node);
   }
   public ReturnAndStamp removeMin() {
     long timeStamp = System.nanoTime();
     ReturnAndStamp ras = skiplist.findAndMarkMin(timeStamp);
     if (ras.returnObj != null) {
-      skiplist.remove((NodePrio<T>)ras.returnObj);
+      skiplist.remove((Node<T>)ras.returnObj);
       
     } 
     return ras;
@@ -22,7 +22,7 @@ public class SkipQueueTimeStamp<T> {
   
   public ReturnAndStamp contains(T item,int score) {
 
-	  NodePrio<T> node = (NodePrio<T>)new NodePrio(item, score);
+	  Node<T> node = (Node<T>)new Node(item, PrioritySkipListTimeStamp.randomLevel(), score);
 	  return skiplist.contains(node);
 	  
 	  

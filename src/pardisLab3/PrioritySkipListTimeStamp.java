@@ -7,16 +7,16 @@ import java.util.concurrent.atomic.AtomicMarkableReference;
 public final class PrioritySkipListTimeStamp<T> { 
 
   public static final int MAX_LEVEL = 25;
-  final NodePrio<T> head = new NodePrio<T>(Integer.MIN_VALUE); 
-  final NodePrio<T> tail = new NodePrio<T>(Integer.MAX_VALUE);
+  final Node<T> head = new Node<T>(Integer.MIN_VALUE); 
+  final Node<T> tail = new Node<T>(Integer.MAX_VALUE);
 
   public PrioritySkipListTimeStamp() {
     for (int i = 0; i < head.next.length; i++) { 
-      head.next[i].set(tail, false); 
-    } 
+      head.next[i] = tail; 
+    }
   }
 
-  private int randomLevel() {
+  public static int randomLevel() {
     Random random = new Random();
     boolean finished = false;
     int level = 0;
@@ -34,70 +34,74 @@ public final class PrioritySkipListTimeStamp<T> {
     return level;
 
   } 
-  int find(NodePrio<T> t, NodePrio<T>[] preds, NodePrio<T>[] succs) { 
-    int key = t.score; 
+  int find(Node<T> t, Node<T>[] preds, Node<T>[] succs) { 
+    int key = t.key; 
     int lFound = -1; 
-    NodePrio<T> pred = head; 
+    Node<T> pred = head; 
     for (int level = MAX_LEVEL; level >= 0; level--) { 
-      NodePrio<T> curr = pred.next[level].getReference();
-      while (key > curr.score) { 
-        pred = curr; curr = pred.next[level].getReference(); 
+      Node<T> curr = pred.next[level];
+      while (key > curr.key) { 
+        pred = curr; curr = pred.next[level]; 
       } 
-      if (lFound == -1 && key == curr.score) { 
+      if (lFound == -1 && key == curr.key) { 
         lFound = level; 
       } 
-      preds[level] = pred; 
+      preds[level] = pred;
       succs[level] = curr; 
     } 
     return lFound; 
   } 
 
+  public ReturnAndStamp add(Node<T> x) { 
+	int topLevel = x.topLevel; 
+	Node<T>[] preds = (Node<T>[]) new Node[MAX_LEVEL + 1];
+	Node<T>[] succs = (Node<T>[]) new Node[MAX_LEVEL + 1]; 
+	while (true){ 
+		int lFound = find(x, preds, succs); 
+		if (lFound != -1) { 
+			Node<T> nodeFound = succs[lFound]; 
+			if (!nodeFound.marked) { 
+				while (!nodeFound.fullyLinked) {} 
+				synchronized(this) {
+					return new ReturnAndStamp(false,System.nanoTime()); 	
+				}
+				
+				} 
+			continue; 
+			} 
+		int highestLocked = -1; 
+		try { 
+			Node<T> pred, succ; 
+			boolean valid = true; 
+			for (int level = 0; valid && (level <= topLevel); level++) { 
+				pred = preds[level]; 
+				succ = succs[level]; 
+				pred.lock.lock(); 
+				highestLocked = level; 
+				valid = !pred.marked && !succ.marked && pred.next[level]==succ; 
+				} 
+			if (!valid) continue; 
+			for (int level = 0; level <= topLevel; level++) 
+				x.next[level] = succs[level]; 
+			for (int level = 0; level <= topLevel; level++) 
+				preds[level].next[level] = x; 
+			x.fullyLinked = true; // successful add linearization point 
+			
+			synchronized(this) {
+				return new ReturnAndStamp(true,System.nanoTime()); 	
+			}
+			
+			} finally { 
+				for (int level = 0; level <= highestLocked; level++) 
+					preds[level].unlock(); 
+				} 
+		} 
+	}
 
-
-
-  ReturnAndStamp add(NodePrio<T> node) {
-
-    int topLevel = randomLevel(); 
-    node.topLevel = topLevel;
-
-    NodePrio<T>[] preds = (NodePrio<T>[]) new NodePrio[MAX_LEVEL + 1];
-    NodePrio<T>[] succs = (NodePrio<T>[]) new NodePrio[MAX_LEVEL + 1]; 
-
-    while (true){ 
-      int lFound = find(node, preds, succs); 
-      if (lFound != -1) { 
-        NodePrio<T> nodeFound = succs[lFound]; 
-        if (!nodeFound.marked.get()) { 
-          while (!nodeFound.fullyLinked) {} 
-          return new ReturnAndStamp(false, System.nanoTime());
-        } 
-        continue; 
-      } 
-
-      NodePrio<T> pred, succ; 
-      boolean valid = true; 
-      for (int level = 0; valid && (level <= topLevel); level++) { 
-        pred = preds[level]; 
-        succ = succs[level]; 
-        valid = !pred.marked.get() && !succ.marked.get() && pred.next[level].getReference()==succ; 
-      } 	
-      if (!valid) continue; 
-
-      for (int level = 0; level <= topLevel; level++) 
-        node.next[level].set(succs[level],false); 
-      for (int level = 0; level <= topLevel; level++) 
-        if (!preds[level].next[level].compareAndSet(succs[level], node, false, false))
-          continue;
-      node.fullyLinked = true; // successful add linearization point 
-      node.timeStamp = System.nanoTime();
-      return new ReturnAndStamp(true, node.timeStamp);
-    } 
-
-  } 
-  boolean remove(NodePrio<T> x) { 
-    NodePrio<T> victim = null; int topLevel = -1; 
-    NodePrio<T>[] preds = (NodePrio<T>[]) new NodePrio[MAX_LEVEL + 1]; 
-    NodePrio<T>[] succs = (NodePrio<T>[]) new NodePrio[MAX_LEVEL + 1]; 
+  boolean remove(Node<T> x) { 
+    Node<T> victim = null; int topLevel = -1; 
+    Node<T>[] preds = (Node<T>[]) new Node[MAX_LEVEL + 1]; 
+    Node<T>[] succs = (Node<T>[]) new Node[MAX_LEVEL + 1]; 
     while (true){ 
       int lFound = find(x, preds, succs); 
       if (lFound != -1) victim = succs[lFound]; 
@@ -105,55 +109,67 @@ public final class PrioritySkipListTimeStamp<T> {
           (lFound != -1 && 
            (victim.fullyLinked 
             && victim.topLevel == lFound 
-            && victim.marked.get()))) { 
+            && victim.marked))) { 
 
         topLevel = victim.topLevel; 
-        if (!victim.marked.get()) { 
+        if (!victim.marked) { 
           return false;
-        } 
-
-
-        NodePrio<T> pred, succ; boolean valid = true; 
-        for (int level = 0; valid && (level <= topLevel); level++) { 
-          pred = preds[level];  
-          valid = !pred.marked.get() && pred.next[level].getReference()==victim; 
-        } 
-        if (!valid) continue; 
-        for (int level = topLevel; level >= 0; level--) { 
-          preds[level].next[level].compareAndSet(victim, victim.next[level].getReference(), false, false); 
         }
-        return true; 
 
-
+        int highestLocked = -1;
+        try { 
+			 Node<T> pred, succ; boolean valid = true; 
+			 for (int level = 0; valid && (level <= topLevel); level++) { 
+				 pred = preds[level]; 
+				 pred.lock(); 
+				 highestLocked = level; 
+				 valid = !pred.marked && pred.next[level]==victim; 
+				 } 
+			 if (!valid) continue; 
+			 for (int level = topLevel; level >= 0; level--) { 
+				 preds[level].next[level] = victim.next[level]; 
+			 } 
+			 victim.lock.unlock(); 
+			 synchronized(this) {
+	
+				 return true;
+			 }
+			 } finally { 
+				 for (int i = 0; i <= highestLocked; i++) { 
+					 preds[i].unlock(); 
+				} 
+			} 
       } else 
         return false;
+      }
     } 
-  } 
 
 
   public ReturnAndStamp findAndMarkMin(long timeStamp) { 
-    NodePrio<T> curr = null, succ = null; 
-    curr = head.next[0].getReference(); 
-    while (curr != tail) { 
-      if (!curr.marked.get() && curr.timeStamp < timeStamp) { 
-        if (curr.marked.compareAndSet(false, true)) { 
+    Node<T> curr = null, succ = null; 
+    curr = head.next[0]; 
+    while (curr != tail) {
+      curr.lock();
+      if (!curr.marked && curr.timeStamp < timeStamp) { 
+    	  curr.marked = true;
+    	  curr.unlock();
           return new ReturnAndStamp(curr, System.nanoTime());
-        } else { 
-          curr = curr.next[0].getReference(); 
-        } 
-      } 
+      } else {
+        curr.unlock();
+        curr = curr.next[0]; 
+      }
     } 
     return new ReturnAndStamp(null,System.nanoTime()); // no unmarked nodes 
   }
   
-  public ReturnAndStamp contains(NodePrio<T> x) { 
-	 NodePrio<T>[] preds = (NodePrio<T>[]) new NodePrio[MAX_LEVEL + 1]; 
-	 NodePrio<T>[] succs = (NodePrio<T>[]) new NodePrio[MAX_LEVEL + 1]; 
+  public ReturnAndStamp contains(Node<T> x) { 
+	 Node<T>[] preds = (Node<T>[]) new Node[MAX_LEVEL + 1]; 
+	 Node<T>[] succs = (Node<T>[]) new Node[MAX_LEVEL + 1]; 
 	 
 	 int lFound = find(x, preds, succs); 
 	 return new ReturnAndStamp((lFound != -1 
 			 && succs[lFound].fullyLinked 
-			 && !succs[lFound].marked.get()),System.nanoTime()); 
+			 && !succs[lFound].marked),System.nanoTime()); 
   }
   
   
@@ -161,10 +177,10 @@ public final class PrioritySkipListTimeStamp<T> {
   public int size() {
     boolean done = false;
     int size = 0;
-    NodePrio<T> node = head;
+    Node<T> node = head;
     while(!done) {
-      node = node.next[0].getReference();
-      if(node.score != tail.score) {
+      node = node.next[0];
+      if(node.key != tail.key) {
         size++;
       } else {
         done = true;
